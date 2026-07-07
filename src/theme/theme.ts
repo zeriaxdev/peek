@@ -1,14 +1,16 @@
 import {
-  slate,
-  slateDark,
+  sand,
+  sandDark,
+  bronze,
+  bronzeDark,
+  gold,
+  goldDark,
   blue,
   blueDark,
   violet,
   violetDark,
   grass,
   grassDark,
-  orange,
-  orangeDark,
   tomato,
   tomatoDark,
   cyan,
@@ -20,18 +22,19 @@ import {
 export type Mode = "light" | "dark";
 export type ThemeSettings = { mode: Mode; accent: string };
 
-// first run: match the OS; after that it's whatever the user toggled
+// Chord defaults: bronze accent on a warm sand grayscale
 export const DEFAULT_THEME: ThemeSettings = {
   mode: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-  accent: "blue",
+  accent: "bronze",
 };
 
 type Scale = Record<string, string>;
 const ACCENTS: Record<string, { light: Scale; dark: Scale }> = {
+  bronze: { light: bronze, dark: bronzeDark },
+  gold: { light: gold, dark: goldDark },
   blue: { light: blue, dark: blueDark },
   violet: { light: violet, dark: violetDark },
   grass: { light: grass, dark: grassDark },
-  orange: { light: orange, dark: orangeDark },
   tomato: { light: tomato, dark: tomatoDark },
   cyan: { light: cyan, dark: cyanDark },
   pink: { light: pink, dark: pinkDark },
@@ -39,36 +42,30 @@ const ACCENTS: Record<string, { light: Scale; dark: Scale }> = {
 
 export const ACCENT_NAMES = Object.keys(ACCENTS);
 
-/** Solid accent color used for the swatch buttons in the picker. */
+/** Solid accent color for the swatch buttons in the picker. */
 export function accentSwatch(name: string): string {
-  const acc = ACCENTS[name] ?? ACCENTS.blue;
-  return acc.light[`${name in ACCENTS ? name : "blue"}9`];
+  const key = name in ACCENTS ? name : "bronze";
+  return ACCENTS[key].light[`${key}9`];
 }
 
-/** Writes the theme as CSS variables on <html>. Instant, no reload. */
+/**
+ * Chord token system: full 12-step grayscale (--gs-N) + accent (--ac-N)
+ * scales as CSS vars, plus a .dark class for Chord's dark: variants.
+ */
 export function applyTheme(t: ThemeSettings) {
-  // old stored value may still say "system" — resolve it to the OS once
+  // old stored value may still say "system" — resolve to the OS once
   const dark =
     t.mode === "dark" ||
     (t.mode !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  const base: Scale = dark ? slateDark : slate;
-  const name = t.accent in ACCENTS ? t.accent : "blue";
-  const acc = dark ? ACCENTS[name].dark : ACCENTS[name].light;
-  const a = (n: number) => acc[`${name}${n}`];
-  const b = (n: number) => base[`slate${n}`];
+  const name = t.accent in ACCENTS ? t.accent : "bronze";
+  const gs: Scale = dark ? sandDark : sand;
+  const ac: Scale = dark ? ACCENTS[name].dark : ACCENTS[name].light;
 
   const root = document.documentElement;
+  root.classList.toggle("dark", dark);
   root.style.colorScheme = dark ? "dark" : "light";
-  const vars: Record<string, string> = {
-    "--bg": b(1),
-    "--card": b(2),
-    "--card-hover": b(3),
-    "--border": b(6),
-    "--muted": b(11),
-    "--fg": b(12),
-    "--accent": a(9),
-    "--accent-soft": a(dark ? 5 : 4),
-    "--accent-strong": a(11),
-  };
-  for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
+  for (let i = 1; i <= 12; i++) {
+    root.style.setProperty(`--gs-${i}`, gs[`sand${i}`]);
+    root.style.setProperty(`--ac-${i}`, ac[`${name}${i}`]);
+  }
 }

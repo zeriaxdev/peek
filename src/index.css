@@ -1,22 +1,39 @@
 @import "tailwindcss";
 
-/* Runtime theme vars (set by applyTheme) mapped to Tailwind utilities:
-   bg-bg, bg-card, border-border, text-muted, text-fg, bg-accent, ... */
-@theme inline {
-  --color-bg: var(--bg);
-  --color-card: var(--card);
-  --color-card-hover: var(--card-hover);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-fg: var(--fg);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-strong: var(--accent-strong);
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  color-scheme: light dark;
+/* Chord token system: runtime scales (set by applyTheme) → Tailwind utilities
+   bg-grayscale-N, text-grayscale-N, border-grayscale-N, *-accent-N */
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --text-tiny: 0.625rem;
+
+  --color-grayscale-1: var(--gs-1);
+  --color-grayscale-2: var(--gs-2);
+  --color-grayscale-3: var(--gs-3);
+  --color-grayscale-4: var(--gs-4);
+  --color-grayscale-5: var(--gs-5);
+  --color-grayscale-6: var(--gs-6);
+  --color-grayscale-7: var(--gs-7);
+  --color-grayscale-8: var(--gs-8);
+  --color-grayscale-9: var(--gs-9);
+  --color-grayscale-10: var(--gs-10);
+  --color-grayscale-11: var(--gs-11);
+  --color-grayscale-12: var(--gs-12);
+
+  --color-accent-1: var(--ac-1);
+  --color-accent-2: var(--ac-2);
+  --color-accent-3: var(--ac-3);
+  --color-accent-4: var(--ac-4);
+  --color-accent-5: var(--ac-5);
+  --color-accent-6: var(--ac-6);
+  --color-accent-7: var(--ac-7);
+  --color-accent-8: var(--ac-8);
+  --color-accent-9: var(--ac-9);
+  --color-accent-10: var(--ac-10);
+  --color-accent-11: var(--ac-11);
+  --color-accent-12: var(--ac-12);
 }
 
 html,
@@ -28,17 +45,29 @@ body,
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--gs-1);
+  color: var(--gs-12);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
+/* Chord shadows */
+.small-shadow {
+  box-shadow:
+    2px 2px 4px rgba(0, 0, 0, 0.02),
+    0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.medium-shadow {
+  box-shadow:
+    0 4px 16px 0 rgba(0, 0, 0, 0.06),
+    0 1.5px 6px 0 rgba(0, 0, 0, 0.04);
+}
+
 /* react-grid-layout: themed drop placeholder (default is red) */
 .react-grid-placeholder {
-  background: var(--accent) !important;
+  background: var(--ac-9) !important;
   opacity: 0.15 !important;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .react-grid-item.react-grid-item {

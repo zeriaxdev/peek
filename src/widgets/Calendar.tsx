@@ -1,4 +1,6 @@
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useState } from "react";
+import IconButton from "../components/ui/IconButton";
 
 // Monday-first month grid, native Date/Intl only.
 const WEEKDAYS = Array.from({ length: 7 }, (_, i) =>
@@ -34,25 +36,28 @@ export default function Calendar() {
     year: "numeric",
   });
 
-  const btn =
-    "no-drag rounded px-1.5 text-xs text-muted hover:bg-card-hover hover:text-fg";
-
   return (
     <div className="flex h-full flex-col p-2.5 select-none">
-      <div className="flex items-center justify-between px-1 pb-1.5">
+      <div className="flex items-center justify-between px-1 pb-1">
         <span className="text-sm font-medium">{label}</span>
-        <div className="flex items-center gap-0.5">
-          <button className={btn} onClick={() => shift(-1)} aria-label="Previous month">‹</button>
-          <button
-            className={btn}
-            onClick={() => setView({ y: today.getFullYear(), m: today.getMonth() })}
+        <div className="flex items-center">
+          <IconButton onClick={() => shift(-1)} aria-label="Previous month">
+            <CaretLeft size={11} />
+          </IconButton>
+          <IconButton
+            aria-label="Jump to today"
+            onClick={() =>
+              setView({ y: today.getFullYear(), m: today.getMonth() })
+            }
           >
-            •
-          </button>
-          <button className={btn} onClick={() => shift(1)} aria-label="Next month">›</button>
+            <span className="block h-1.5 w-1.5 rounded-full bg-accent-9" />
+          </IconButton>
+          <IconButton onClick={() => shift(1)} aria-label="Next month">
+            <CaretRight size={11} />
+          </IconButton>
         </div>
       </div>
-      <div className="grid grid-cols-7 text-center text-[10px] text-muted">
+      <div className="grid grid-cols-7 text-center text-tiny text-grayscale-9">
         {WEEKDAYS.map((w, i) => (
           <div key={i} className="py-0.5">
             {w}
@@ -65,10 +70,10 @@ export default function Calendar() {
             <span
               className={
                 isToday(d)
-                  ? "flex h-6 w-6 items-center justify-center rounded-full bg-accent font-semibold text-white"
+                  ? "flex h-6 w-6 items-center justify-center rounded-full bg-accent-9 font-semibold text-white"
                   : d.getMonth() === view.m
-                    ? "text-fg"
-                    : "text-muted opacity-50"
+                    ? "text-grayscale-12"
+                    : "text-grayscale-7"
               }
             >
               {d.getDate()}

@@ -1,6 +1,10 @@
+import { X } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { fileToDataUrl } from "../lib/favicon";
 import type { LinkItem } from "./LinkTile";
+import Button from "./ui/Button";
+import IconButton from "./ui/IconButton";
+import Input from "./ui/Input";
 
 function normalizeUrl(raw: string): string {
   const s = raw.trim();
@@ -33,29 +37,26 @@ export default function AddLink({ onAdd, onClose }: Props) {
     onClose();
   };
 
-  const input =
-    "min-w-0 rounded-md border border-border bg-bg px-2 py-1 text-xs text-fg placeholder:text-muted focus:border-accent focus:outline-none";
-
   return (
     <form
       onSubmit={submit}
-      className="no-drag absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 border-t border-border bg-card p-2"
+      className="no-drag absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 border-t border-grayscale-3 bg-grayscale-2 p-2 dark:border-grayscale-5 dark:bg-grayscale-4"
     >
-      <input
+      <Input
         autoFocus
         placeholder="url"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        className={`${input} flex-[2]`}
+        className="flex-[2]"
       />
-      <input
+      <Input
         placeholder="name"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className={`${input} flex-1`}
+        className="flex-1"
       />
       <label
-        className={`cursor-pointer rounded-md border border-border px-2 py-1 text-xs ${icon ? "text-accent-strong" : "text-muted"} hover:text-fg`}
+        className={`flex h-7 cursor-pointer items-center rounded-lg border border-grayscale-4 px-2 text-xs transition-colors hover:border-grayscale-5 ${icon ? "text-accent-11" : "text-grayscale-9"}`}
         title="Custom icon"
       >
         {icon ? "icon ✓" : "icon"}
@@ -69,20 +70,12 @@ export default function AddLink({ onAdd, onClose }: Props) {
           }}
         />
       </label>
-      <button
-        type="submit"
-        className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white"
-      >
+      <Button variant="primary" type="submit" className="px-2.5 py-0.5 text-xs">
         Add
-      </button>
-      <button
-        type="button"
-        aria-label="Cancel"
-        onClick={onClose}
-        className="rounded-md px-1.5 py-1 text-xs text-muted hover:text-fg"
-      >
-        ✕
-      </button>
+      </Button>
+      <IconButton type="button" aria-label="Cancel" onClick={onClose}>
+        <X size={12} />
+      </IconButton>
     </form>
   );
 }

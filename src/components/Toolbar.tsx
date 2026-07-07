@@ -1,7 +1,11 @@
+import { Check, Moon, PencilSimple, Plus, Sun } from "@phosphor-icons/react";
 import type { Layout } from "react-grid-layout";
+import { cn } from "../lib/cn";
 import { useTheme } from "../theme/ThemeProvider";
 import { ACCENT_NAMES, accentSwatch } from "../theme/theme";
 import { WIDGETS } from "../widgets/registry";
+import Button from "./ui/Button";
+import IconButton from "./ui/IconButton";
 
 type Props = {
   edit: boolean;
@@ -17,43 +21,50 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
   );
 
   return (
-    <header className="flex h-12 items-center justify-end gap-2 px-3">
+    <header className="flex h-12 items-center justify-end gap-2 overflow-hidden px-3">
       {edit && (
         <>
-          <div className="flex items-center gap-1.5" role="group" aria-label="Accent color">
+          <div
+            className="flex items-center gap-1.5"
+            role="group"
+            aria-label="Accent color"
+          >
             {ACCENT_NAMES.map((name) => (
               <button
                 key={name}
                 aria-label={`Accent ${name}`}
+                title={name}
                 onClick={() => setTheme((t) => ({ ...t, accent: name }))}
-                className={`h-5 w-5 rounded-full transition-transform hover:scale-110 ${
-                  theme.accent === name ? "ring-2 ring-fg ring-offset-2 ring-offset-bg" : ""
-                }`}
+                className={cn(
+                  "h-4.5 w-4.5 cursor-pointer rounded-full transition-transform hover:scale-110",
+                  theme.accent === name &&
+                    "ring-2 ring-grayscale-12 ring-offset-2 ring-offset-grayscale-1",
+                )}
                 style={{ background: accentSwatch(name) }}
               />
             ))}
           </div>
           {inactive.length > 0 && (
-            <div className="ml-2 flex items-center gap-1.5">
+            <div className="ml-1 flex min-w-0 items-center gap-1.5 overflow-x-auto">
               {inactive.map((w) => (
-                <button
+                <Button
                   key={w.id}
+                  className="shrink-0 px-2 py-0.5 text-xs"
                   onClick={() =>
                     setLayout((prev) => [
                       ...prev,
                       { i: w.id, x: 0, y: 99, w: w.w, h: w.h },
                     ])
                   }
-                  className="rounded-full border border-border bg-card px-2.5 py-0.5 text-xs text-muted hover:bg-card-hover hover:text-fg"
                 >
-                  + {w.title}
-                </button>
+                  <Plus size={10} /> {w.title}
+                </Button>
               ))}
             </div>
           )}
         </>
       )}
-      <button
+      <IconButton
         aria-label={theme.mode === "dark" ? "Switch to light" : "Switch to dark"}
         title={theme.mode === "dark" ? "Light mode" : "Dark mode"}
         onClick={() =>
@@ -62,21 +73,18 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
             mode: t.mode === "dark" ? "light" : "dark",
           }))
         }
-        className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-card-hover hover:text-fg"
       >
-        {theme.mode === "dark" ? "☀" : "☾"}
-      </button>
-      <button
-        aria-label={edit ? "Done editing" : "Edit layout"}
-        onClick={() => setEdit(!edit)}
-        className={`rounded-lg px-2.5 py-1 text-sm ${
-          edit
-            ? "bg-accent text-white"
-            : "text-muted hover:bg-card-hover hover:text-fg"
-        }`}
-      >
-        {edit ? "Done" : "✎"}
-      </button>
+        {theme.mode === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+      </IconButton>
+      {edit ? (
+        <Button variant="primary" className="px-2.5 py-0.5 text-xs" onClick={() => setEdit(false)}>
+          <Check size={12} /> Done
+        </Button>
+      ) : (
+        <IconButton aria-label="Edit layout" title="Edit layout" onClick={() => setEdit(true)}>
+          <PencilSimple size={15} />
+        </IconButton>
+      )}
     </header>
   );
 }

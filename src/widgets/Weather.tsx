@@ -1,4 +1,8 @@
+import { MapPin } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import Button from "../components/ui/Button";
+import Empty from "../components/ui/Empty";
+import Input from "../components/ui/Input";
 import { useStored } from "../lib/store";
 
 type Loc = { lat: number; lon: number; name: string };
@@ -69,23 +73,22 @@ function CitySearch({ onPick }: { onPick: (l: Loc) => void }) {
   };
 
   return (
-    <div className="no-drag flex h-full flex-col items-center justify-center gap-1.5 p-3">
+    <Empty icon={MapPin} text="Set your city">
       <form
-        className="flex w-full max-w-56 gap-1.5"
+        className="no-drag flex w-full max-w-52 gap-1.5"
         onSubmit={(e) => {
           e.preventDefault();
           void search();
         }}
       >
-        <input
+        <Input
           placeholder="city…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-border bg-bg px-2 py-1 text-xs focus:border-accent focus:outline-none"
         />
-        <button className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white">
+        <Button variant="primary" type="submit" className="px-2.5 py-0.5 text-xs">
           Set
-        </button>
+        </Button>
       </form>
       {results.map((r, i) => (
         <button
@@ -93,13 +96,13 @@ function CitySearch({ onPick }: { onPick: (l: Loc) => void }) {
           onClick={() =>
             onPick({ lat: r.latitude, lon: r.longitude, name: r.name })
           }
-          className="text-xs text-muted hover:text-fg"
+          className="no-drag cursor-pointer text-xs text-grayscale-10 hover:text-grayscale-12"
         >
           {r.name}
           {r.admin1 ? `, ${r.admin1}` : ""} {r.country_code ?? ""}
         </button>
       ))}
-    </div>
+    </Empty>
   );
 }
 
@@ -129,7 +132,7 @@ export default function Weather() {
   if (!loc) return <CitySearch onPick={setLoc} />;
   if (!snap) {
     return (
-      <div className="flex h-full items-center justify-center text-xs text-muted">
+      <div className="flex h-full items-center justify-center text-xs text-grayscale-9">
         loading…
       </div>
     );
@@ -142,11 +145,13 @@ export default function Weather() {
     <div className="group/w relative flex h-full items-center justify-center gap-3 p-2 select-none">
       <div className="text-4xl">{glyph}</div>
       <div>
-        <div className="text-3xl font-semibold tabular-nums">{snap.temp}°</div>
-        <div className="text-xs text-muted">
+        <div className="font-mono text-3xl font-medium tabular-nums">
+          {snap.temp}°
+        </div>
+        <div className="text-xs text-grayscale-10">
           {label} · {loc.name}
         </div>
-        <div className="text-xs text-muted">
+        <div className="text-xs text-grayscale-9">
           {snap.hi}° / {snap.lo}° · {snap.wind} km/h
           {old && " · stale"}
         </div>
@@ -154,7 +159,7 @@ export default function Weather() {
       <button
         aria-label="Change city"
         onClick={() => setLoc(null)}
-        className="no-drag absolute top-1.5 right-2 hidden text-[10px] text-muted group-hover/w:block hover:text-fg"
+        className="no-drag absolute top-1.5 right-2 hidden cursor-pointer text-tiny text-grayscale-9 group-hover/w:block hover:text-grayscale-12"
       >
         change
       </button>

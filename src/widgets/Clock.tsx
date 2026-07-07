@@ -1,4 +1,6 @@
+import { Plus, X } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import Input from "../components/ui/Input";
 import { useStored } from "../lib/store";
 
 const cityName = (zone: string) =>
@@ -36,28 +38,26 @@ export default function Clock() {
   const allZones = Intl.supportedValuesOf("timeZone");
 
   return (
-    <div className="group/clock flex h-full flex-col items-center justify-center gap-1 p-2 select-none">
-      <div className="text-5xl font-semibold tabular-nums tracking-tight">
+    <div className="group/clock flex h-full flex-col items-center justify-center gap-0.5 p-2 select-none">
+      <div className="font-mono text-5xl font-medium tracking-tight tabular-nums">
         {time}
       </div>
-      <div className="text-sm text-muted">{date}</div>
+      <div className="text-sm text-grayscale-10">{date}</div>
 
       {zones.length > 0 && (
         <div className="mt-1.5 flex max-w-full flex-wrap justify-center gap-x-4 gap-y-0.5">
           {zones.map((z) => (
-            <span key={z} className="group/zone text-xs text-muted">
+            <span key={z} className="group/zone text-xs text-grayscale-10">
               {cityName(z)}{" "}
-              <span className="font-medium tabular-nums text-fg">
+              <span className="font-mono font-medium text-grayscale-12 tabular-nums">
                 {inZone(z)}
               </span>
               <button
                 aria-label={`Remove ${cityName(z)}`}
-                onClick={() =>
-                  setZones((prev) => prev.filter((x) => x !== z))
-                }
-                className="no-drag ml-1 hidden text-[10px] group-hover/zone:inline hover:text-fg"
+                onClick={() => setZones((prev) => prev.filter((x) => x !== z))}
+                className="no-drag ml-1 hidden cursor-pointer text-grayscale-8 group-hover/zone:inline-block hover:text-grayscale-12"
               >
-                ✕
+                <X size={9} />
               </button>
             </span>
           ))}
@@ -76,14 +76,14 @@ export default function Clock() {
             setAdding(false);
           }}
         >
-          <input
+          <Input
             autoFocus
             list="tz-list"
             placeholder="Europe/Helsinki"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => setAdding(false)}
-            className="w-44 rounded-md border border-border bg-bg px-2 py-1 text-xs focus:border-accent focus:outline-none"
+            className="w-44 text-xs"
           />
           <datalist id="tz-list">
             {allZones.map((z) => (
@@ -94,9 +94,9 @@ export default function Clock() {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="no-drag mt-0.5 hidden rounded px-1.5 text-xs text-muted group-hover/clock:block hover:text-fg"
+          className="no-drag mt-0.5 hidden cursor-pointer items-center gap-1 rounded px-1.5 text-tiny text-grayscale-9 group-hover/clock:flex hover:text-grayscale-12"
         >
-          + timezone
+          <Plus size={9} /> timezone
         </button>
       )}
     </div>
