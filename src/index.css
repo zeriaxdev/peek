@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Runtime theme vars (set by applyTheme) mapped to Tailwind utilities:
+   bg-bg, bg-card, border-border, text-muted, text-fg, bg-accent, ... */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-fg: var(--fg);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-strong: var(--accent-strong);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   color-scheme: light dark;
 }
@@ -9,12 +24,29 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  overflow: hidden; /* one screen, no scroll */
 }
 
 body {
-  background: #0b0b0c;
-  color: #ededed;
-  font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* react-grid-layout: themed drop placeholder (default is red) */
+.react-grid-placeholder {
+  background: var(--accent) !important;
+  opacity: 0.15 !important;
+  border-radius: 0.75rem;
+}
+
+.react-grid-item.react-grid-item {
+  transition-duration: 150ms; /* quick animations per spec */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-grid-item.react-grid-item {
+    transition: none;
+  }
 }

@@ -1,35 +1,26 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { Layout } from "react-grid-layout";
+import BentoGrid from "./components/BentoGrid";
+import Toolbar from "./components/Toolbar";
+import { useStored } from "./lib/store";
+import { ThemeProvider } from "./theme/ThemeProvider";
+import { DEFAULT_LAYOUT } from "./widgets/registry";
 
-// Phase 0 smoke test: confirms React + Tailwind + MV3 build all load.
-// Replaced by the bento grid in Phase 1.
 export default function App() {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const time = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  const date = now.toLocaleDateString([], {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const [layout, setLayout] = useStored<Layout[]>("layout", DEFAULT_LAYOUT);
+  const [edit, setEdit] = useState(false);
 
   return (
-    <main className="flex h-full flex-col items-center justify-center gap-2">
-      <div className="text-7xl font-semibold tabular-nums tracking-tight">
-        {time}
+    <ThemeProvider>
+      <div className="flex h-full flex-col overflow-hidden">
+        <Toolbar
+          edit={edit}
+          setEdit={setEdit}
+          layout={layout}
+          setLayout={setLayout}
+        />
+        <BentoGrid layout={layout} setLayout={setLayout} edit={edit} />
       </div>
-      <div className="text-lg text-neutral-400">{date}</div>
-      <div className="mt-6 text-xs uppercase tracking-widest text-neutral-600">
-        peek · phase 0
-      </div>
-    </main>
+    </ThemeProvider>
   );
 }
