@@ -1,14 +1,7 @@
 import type { Layout } from "react-grid-layout";
 import { useTheme } from "../theme/ThemeProvider";
-import { ACCENT_NAMES, accentSwatch, type Mode } from "../theme/theme";
+import { ACCENT_NAMES, accentSwatch } from "../theme/theme";
 import { WIDGETS } from "../widgets/registry";
-
-const NEXT_MODE: Record<Mode, Mode> = {
-  light: "dark",
-  dark: "system",
-  system: "light",
-};
-const MODE_ICON: Record<Mode, string> = { light: "☀", dark: "☾", system: "◐" };
 
 type Props = {
   edit: boolean;
@@ -61,12 +54,17 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
         </>
       )}
       <button
-        aria-label={`Theme mode: ${theme.mode}`}
-        title={`Theme: ${theme.mode}`}
-        onClick={() => setTheme((t) => ({ ...t, mode: NEXT_MODE[t.mode] }))}
+        aria-label={theme.mode === "dark" ? "Switch to light" : "Switch to dark"}
+        title={theme.mode === "dark" ? "Light mode" : "Dark mode"}
+        onClick={() =>
+          setTheme((t) => ({
+            ...t,
+            mode: t.mode === "dark" ? "light" : "dark",
+          }))
+        }
         className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-card-hover hover:text-fg"
       >
-        {MODE_ICON[theme.mode]}
+        {theme.mode === "dark" ? "☀" : "☾"}
       </button>
       <button
         aria-label={edit ? "Done editing" : "Edit layout"}

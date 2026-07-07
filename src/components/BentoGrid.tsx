@@ -24,8 +24,11 @@ type Props = {
 
 export default function BentoGrid({ layout, setLayout, edit }: Props) {
   const [rowHeight, setRowHeight] = useState(calcRowHeight);
+  // no CSS transforms on first paint → cards don't fly in from the corner
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const onResize = () => setRowHeight(calcRowHeight());
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -50,6 +53,7 @@ export default function BentoGrid({ layout, setLayout, edit }: Props) {
         margin={[MARGIN, MARGIN]}
         containerPadding={[MARGIN, MARGIN]}
         compactType="vertical"
+        useCSSTransforms={mounted}
         isDraggable={edit}
         isResizable={edit}
         draggableCancel=".no-drag"

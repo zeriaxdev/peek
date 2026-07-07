@@ -17,10 +17,14 @@ import {
   pinkDark,
 } from "@radix-ui/colors";
 
-export type Mode = "light" | "dark" | "system";
+export type Mode = "light" | "dark";
 export type ThemeSettings = { mode: Mode; accent: string };
 
-export const DEFAULT_THEME: ThemeSettings = { mode: "system", accent: "blue" };
+// first run: match the OS; after that it's whatever the user toggled
+export const DEFAULT_THEME: ThemeSettings = {
+  mode: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+  accent: "blue",
+};
 
 type Scale = Record<string, string>;
 const ACCENTS: Record<string, { light: Scale; dark: Scale }> = {
@@ -41,16 +45,12 @@ export function accentSwatch(name: string): string {
   return acc.light[`${name in ACCENTS ? name : "blue"}9`];
 }
 
-export function isDark(mode: Mode): boolean {
-  return (
-    mode === "dark" ||
-    (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
-  );
-}
-
 /** Writes the theme as CSS variables on <html>. Instant, no reload. */
 export function applyTheme(t: ThemeSettings) {
-  const dark = isDark(t.mode);
+  // old stored value may still say "system" — resolve it to the OS once
+  const dark =
+    t.mode === "dark" ||
+    (t.mode !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
   const base: Scale = dark ? slateDark : slate;
   const name = t.accent in ACCENTS ? t.accent : "blue";
   const acc = dark ? ACCENTS[name].dark : ACCENTS[name].light;

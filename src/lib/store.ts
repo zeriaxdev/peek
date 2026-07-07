@@ -32,14 +32,17 @@ function rawSet(key: string, value: unknown) {
 export function useStored<T>(
   key: string,
   def: T,
-): [T, (v: T | ((prev: T) => T)) => void] {
+): [T, (v: T | ((prev: T) => T)) => void, boolean] {
   const [value, setValue] = useState<T>(def);
+  const [ready, setReady] = useState(false);
   const defRef = useRef(def);
 
   useEffect(() => {
     let alive = true;
     void rawGet(key).then((v) => {
-      if (alive && v !== undefined) setValue(v as T);
+      if (!alive) return;
+      if (v !== undefined) setValue(v as T);
+      setReady(true);
     });
     if (!isExt) {
       return () => {
@@ -71,5 +74,5 @@ export function useStored<T>(
     });
   };
 
-  return [value, set];
+  return [value, set, ready];
 }

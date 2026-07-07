@@ -14,11 +14,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
-    if (theme.mode !== "system") return;
-    const mq = matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => applyTheme(theme);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
   }, [theme]);
 
   return (
