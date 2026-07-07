@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "peek",
+  "version": "0.1.0",
+  "description": "Fast, private, offline new-tab dashboard.",
+  "chrome_url_overrides": { "newtab": "index.html" },
+  "permissions": ["storage", "favicon"]
+}
