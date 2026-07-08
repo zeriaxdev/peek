@@ -11,6 +11,7 @@ import {
   MagnifyingGlass,
   NotePencil,
   Timer,
+  Tram,
 } from "@phosphor-icons/react";
 import type { ComponentType } from "react";
 import type { Layout } from "react-grid-layout";
@@ -19,6 +20,9 @@ import Clock from "./Clock";
 import Deadlines from "./Deadlines";
 import Folders from "./Folders";
 import GitHub from "./GitHub";
+import GitHubSettings from "./GitHubSettings";
+import Hsl from "./Hsl";
+import HslSettings from "./HslSettings";
 import Links from "./Links";
 import Notes from "./Notes";
 import Pomodoro from "./Pomodoro";
@@ -31,6 +35,8 @@ export type WidgetDef = {
   title: string;
   icon: Icon;
   Component: ComponentType;
+  /** optional per-widget settings panel, shown from the edit-mode gear */
+  Settings?: ComponentType;
   /** default + minimum size in grid cells (12-col × 12-row grid) */
   w: number;
   h: number;
@@ -43,7 +49,8 @@ export const WIDGETS: Record<string, WidgetDef> = {
   clock: { id: "clock", title: "Clock", icon: ClockIcon, Component: Clock, w: 3, h: 3, minW: 2, minH: 2 },
   weather: { id: "weather", title: "Weather", icon: CloudSun, Component: Weather, w: 3, h: 3, minW: 3, minH: 2 },
   search: { id: "search", title: "Search", icon: MagnifyingGlass, Component: Search, w: 6, h: 1, minW: 3, minH: 1 },
-  github: { id: "github", title: "Pull Requests", icon: GitPullRequest, Component: GitHub, w: 6, h: 5, minW: 4, minH: 3 },
+  github: { id: "github", title: "Pull Requests", icon: GitPullRequest, Component: GitHub, Settings: GitHubSettings, w: 6, h: 5, minW: 4, minH: 3 },
+  hsl: { id: "hsl", title: "Transit", icon: Tram, Component: Hsl, Settings: HslSettings, w: 3, h: 5, minW: 3, minH: 3 },
   links: { id: "links", title: "Links", icon: LinkSimple, Component: Links, w: 6, h: 4, minW: 3, minH: 2 },
   calendar: { id: "calendar", title: "Calendar", icon: CalendarBlank, Component: Calendar, w: 3, h: 5, minW: 3, minH: 4 },
   todo: { id: "todo", title: "Todo", icon: ListChecks, Component: Todo, w: 3, h: 5, minW: 3, minH: 2 },

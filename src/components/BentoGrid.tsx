@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
 import { GRID_ROWS, WIDGETS } from "../widgets/registry";
 import WidgetShell from "./WidgetShell";
@@ -14,21 +14,24 @@ type Props = {
 
 export default function BentoGrid({ layout, setLayout, edit }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const [rowHeight, setRowHeight] = useState(60);
-  // no CSS transforms on first paint → cards don't fly in from the corner
-  const [mounted, setMounted] = useState(false);
+  // 0 = not yet measured → don't render the grid, so cards never appear at a
+  // guessed height and then jump/twitch when the real height comes in.
+  // Seed from the window so the first render is already close; useLayoutEffect
+  // corrects to the exact box height before the browser paints.
+  const [rowHeight, setRowHeight] = useState(() =>
+    Math.max(28, Math.floor((window.innerHeight - 64) / GRID_ROWS - MARGIN)),
+  );
 
-  // Measure the actual grid box (not the window) so GRID_ROWS rows fill it
-  // exactly — the board never overflows and never clips the toolbar.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => {
+    const measure = () => {
       const avail = el.clientHeight - MARGIN * (GRID_ROWS + 1);
-      setRowHeight(Math.max(28, Math.floor(avail / GRID_ROWS)));
-    });
+      if (avail > 0) setRowHeight(Math.max(28, Math.floor(avail / GRID_ROWS)));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setMounted(true);
     return () => ro.disconnect();
   }, []);
 
@@ -50,10 +53,11 @@ export default function BentoGrid({ layout, setLayout, edit }: Props) {
         margin={[MARGIN, MARGIN]}
         containerPadding={[0, 0]}
         compactType="vertical"
-        useCSSTransforms={mounted}
+        useCSSTransforms
         isDraggable={edit}
         isResizable={edit}
         draggableHandle=".drag-handle"
+        draggableCancel=".no-drag"
         onLayoutChange={(l) => setLayout(l)}
       >
         {items.map((li) => (

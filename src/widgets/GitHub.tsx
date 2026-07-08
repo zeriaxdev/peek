@@ -2,6 +2,7 @@ import {
   CheckCircle,
   Circle,
   DotsThree,
+  EyeSlash,
   GitPullRequest,
   GithubLogo,
   WarningCircle,
@@ -40,16 +41,18 @@ function ReviewBadge({ review }: { review: PR["review"] }) {
     return <Badge variant="outline" className="text-ok">approved</Badge>;
   if (review === "changes")
     return <Badge variant="outline" className="text-bad">changes</Badge>;
-  if (review === "required")
-    return <Badge variant="outline">review</Badge>;
-  return null;
+  // not approved yet → amber, so open work stands out at a glance
+  return <Badge variant="outline" className="text-warn">review</Badge>;
 }
 
-function PRRow({ pr }: { pr: PR }) {
+function PRRow({ pr, onHide }: { pr: PR; onHide: () => void }) {
+  const approved = pr.review === "approved";
   return (
     <a
       href={pr.url}
-      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4"
+      className={`group flex items-center gap-2 rounded-lg border-l-2 px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4 ${
+        approved ? "border-transparent" : "border-warn/60"
+      }`}
     >
       <CIDot ci={pr.ci} />
       <GitPullRequest
@@ -61,6 +64,17 @@ function PRRow({ pr }: { pr: PR }) {
       <span className="shrink-0 text-tiny text-grayscale-9">
         {pr.repo.split("/")[1]} #{pr.number}
       </span>
+      <button
+        aria-label="Hide this PR"
+        title="Hide forever"
+        onClick={(e) => {
+          e.preventDefault();
+          onHide();
+        }}
+        className="no-drag hidden shrink-0 cursor-pointer text-grayscale-8 group-hover:block hover:text-grayscale-12"
+      >
+        <EyeSlash size={13} />
+      </button>
     </a>
   );
 }
@@ -84,10 +98,12 @@ export default function GitHub() {
   // ponytail: PAT lives in chrome.storage.local, never leaves the machine
   const [pat, setPat, patReady] = useStored<string>("githubPat", "");
   const [cache, setCache] = useStored<Cache | null>("githubCache", null);
+  const [hidden, setHidden] = useStored<string[]>("githubHidden", []);
   const [tab, setTab] = useState("review");
   const [draft, setDraft] = useState("");
   const [invalid, setInvalid] = useState(false);
   const valid = isGhData(cache);
+  const hide = (key: string) => setHidden((prev) => [...prev, key]);
 
   useEffect(() => {
     if (!patReady || !pat) return;
@@ -158,19 +174,22 @@ export default function GitHub() {
   }
 
   const c = cache!; // narrowed by `valid` above
+  const shown = new Set(hidden);
+  const mine = c.mine.filter((p) => !shown.has(p.key));
+  const review = c.review.filter((p) => !shown.has(p.key));
   const count = (n: number) =>
     n > 0 ? <span className="text-grayscale-9">{n}</span> : null;
   const tabs = [
-    { value: "review", label: <>Review {count(c.review.length)}</> },
-    { value: "mine", label: <>Mine {count(c.mine.length)}</> },
+    { value: "review", label: <>Review {count(review.length)}</> },
+    { value: "mine", label: <>Mine {count(mine.length)}</> },
     { value: "issues", label: <>Issues {count(c.issues.length)}</> },
   ];
 
   const rows =
     tab === "issues"
       ? c.issues.map((it) => <IssueRow key={it.key} it={it} />)
-      : (tab === "mine" ? c.mine : c.review).map((pr) => (
-          <PRRow key={pr.key} pr={pr} />
+      : (tab === "mine" ? mine : review).map((pr) => (
+          <PRRow key={pr.key} pr={pr} onHide={() => hide(pr.key)} />
         ));
 
   return (
@@ -185,6 +204,14 @@ export default function GitHub() {
           </p>
         )}
       </div>
+      {hidden.length > 0 && (
+        <button
+          onClick={() => setHidden([])}
+          className="no-drag shrink-0 px-3 pb-1.5 text-left text-tiny text-grayscale-8 hover:text-grayscale-11"
+        >
+          {hidden.length} hidden · reset
+        </button>
+      )}
     </div>
   );
 }

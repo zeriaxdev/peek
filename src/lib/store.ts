@@ -25,6 +25,13 @@ function rawSet(key: string, value: unknown) {
   );
 }
 
+/** Delete keys from storage (used when removing a saved token + its cache). */
+export function removeKeys(keys: string[]) {
+  for (const k of keys) lastWritten.delete(k);
+  if (isExt) void chrome.storage.local.remove(keys);
+  else for (const k of keys) localStorage.removeItem(k);
+}
+
 /**
  * Persistent state hook. Reads the stored value on mount, writes debounced,
  * and follows changes made from other open tabs.

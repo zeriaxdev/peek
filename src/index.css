@@ -48,6 +48,17 @@ body,
   overflow: hidden; /* one screen, no scroll */
 }
 
+/* First-paint background before JS sets the theme vars — matches the OS so
+   there is no white flash. applyTheme() overrides once React mounts. */
+html {
+  background: #fdfdfc; /* sand-1 light */
+}
+@media (prefers-color-scheme: dark) {
+  html {
+    background: #111110; /* sand-1 dark */
+  }
+}
+
 body {
   background: var(--gs-1);
   color: var(--gs-12);
@@ -74,12 +85,35 @@ body {
   border-radius: 0.5rem;
 }
 
-.react-grid-item.react-grid-item {
-  transition-duration: 150ms; /* quick animations per spec */
+/* no appear/settle animation on tiles — they were twitching on reflow.
+   only the actively dragged tile stays smooth. */
+.react-grid-item {
+  transition: none !important;
+}
+.react-grid-item.react-draggable-dragging,
+.react-grid-item.resizing {
+  transition: none !important;
+  z-index: 3;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .react-grid-item.react-grid-item {
-    transition: none;
-  }
+/* replace RGL's default diagonal-lines resize grip with a clean themed
+   corner bracket ( _| ), matching the other icon colors. */
+.react-resizable-handle {
+  background: none !important;
+  padding: 0 !important;
+}
+.react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--gs-9);
+  border-bottom: 2px solid var(--gs-9);
+  border-radius: 0 0 2px 0;
+  opacity: 0.6;
+}
+.react-grid-item:hover .react-resizable-handle::after {
+  opacity: 1;
 }

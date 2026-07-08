@@ -2,7 +2,12 @@ import { Check, Moon, PencilSimple, Plus, Sun } from "@phosphor-icons/react";
 import type { Layout } from "react-grid-layout";
 import { cn } from "../lib/cn";
 import { useTheme } from "../theme/ThemeProvider";
-import { ACCENT_NAMES, accentSwatch } from "../theme/theme";
+import {
+  ACCENT_NAMES,
+  accentSwatch,
+  GRAY_NAMES,
+  graySwatch,
+} from "../theme/theme";
 import { WIDGETS } from "../widgets/registry";
 import Button from "./ui/Button";
 import IconButton from "./ui/IconButton";
@@ -38,6 +43,23 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
                     "ring-2 ring-grayscale-12 ring-offset-2 ring-offset-grayscale-1",
                 )}
                 style={{ background: accentSwatch(name) }}
+              />
+            ))}
+          </div>
+          <div className="mx-1 h-4 w-px shrink-0 bg-grayscale-6" />
+          <div className="flex shrink-0 items-center gap-1.5" role="group" aria-label="Base tone">
+            {GRAY_NAMES.map((name) => (
+              <button
+                key={name}
+                aria-label={`Base ${name}`}
+                title={name === "chrome" ? "Chrome grey" : name}
+                onClick={() => setTheme((t) => ({ ...t, gray: name }))}
+                className={cn(
+                  "h-4.5 w-4.5 shrink-0 cursor-pointer rounded-md border border-grayscale-6 transition-transform hover:scale-110",
+                  theme.gray === name &&
+                    "ring-2 ring-grayscale-12 ring-offset-2 ring-offset-grayscale-1",
+                )}
+                style={{ background: graySwatch(name) }}
               />
             ))}
           </div>
