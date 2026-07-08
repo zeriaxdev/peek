@@ -4,6 +4,7 @@ import Button from "../components/ui/Button";
 import Empty from "../components/ui/Empty";
 import Input from "../components/ui/Input";
 import { useStored } from "../lib/store";
+import { describe } from "../lib/weather";
 
 type Loc = { lat: number; lon: number; name: string };
 type Snapshot = {
@@ -23,20 +24,6 @@ type GeoResult = {
 };
 
 const STALE_MS = 30 * 60 * 1000;
-
-// WMO weather codes → glyph + label
-function describe(code: number): [string, string] {
-  if (code === 0) return ["☀️", "Clear"];
-  if (code <= 2) return ["⛅", "Partly cloudy"];
-  if (code === 3) return ["☁️", "Overcast"];
-  if (code <= 48) return ["🌫️", "Fog"];
-  if (code <= 57) return ["🌦️", "Drizzle"];
-  if (code <= 67) return ["🌧️", "Rain"];
-  if (code <= 77) return ["🌨️", "Snow"];
-  if (code <= 82) return ["🌧️", "Showers"];
-  if (code <= 86) return ["🌨️", "Snow showers"];
-  return ["⛈️", "Thunderstorm"];
-}
 
 async function fetchWeather(loc: Loc): Promise<Snapshot> {
   const u = new URL("https://api.open-meteo.com/v1/forecast");

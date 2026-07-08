@@ -16,6 +16,7 @@ import { TabList } from "../components/ui/Tabs";
 import {
   fetchGitHub,
   type GhData,
+  isGhData,
   type Issue,
   type PR,
 } from "../lib/github";
@@ -86,6 +87,7 @@ export default function GitHub() {
   const [tab, setTab] = useState("review");
   const [draft, setDraft] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const valid = isGhData(cache);
 
   useEffect(() => {
     if (!patReady || !pat) return;
@@ -101,7 +103,8 @@ export default function GitHub() {
           if (!cancelled && /40[13]|Bad cred/i.test(String(e.message)))
             setInvalid(true);
         });
-    if (!cache || Date.now() - cache.ts > POLL_MS) refresh();
+    // stale cache from an older widget version has a different shape → refetch
+    if (!valid || Date.now() - cache!.ts > POLL_MS) refresh();
     const id = setInterval(refresh, POLL_MS);
     return () => {
       cancelled = true;
@@ -146,7 +149,7 @@ export default function GitHub() {
     );
   }
 
-  if (!cache) {
+  if (!valid) {
     return (
       <div className="flex h-full items-center justify-center text-xs text-grayscale-9">
         loading…
@@ -154,18 +157,19 @@ export default function GitHub() {
     );
   }
 
+  const c = cache!; // narrowed by `valid` above
   const count = (n: number) =>
     n > 0 ? <span className="text-grayscale-9">{n}</span> : null;
   const tabs = [
-    { value: "review", label: <>Review {count(cache.review.length)}</> },
-    { value: "mine", label: <>Mine {count(cache.mine.length)}</> },
-    { value: "issues", label: <>Issues {count(cache.issues.length)}</> },
+    { value: "review", label: <>Review {count(c.review.length)}</> },
+    { value: "mine", label: <>Mine {count(c.mine.length)}</> },
+    { value: "issues", label: <>Issues {count(c.issues.length)}</> },
   ];
 
   const rows =
     tab === "issues"
-      ? cache.issues.map((it) => <IssueRow key={it.key} it={it} />)
-      : (tab === "mine" ? cache.mine : cache.review).map((pr) => (
+      ? c.issues.map((it) => <IssueRow key={it.key} it={it} />)
+      : (tab === "mine" ? c.mine : c.review).map((pr) => (
           <PRRow key={pr.key} pr={pr} />
         ));
 

@@ -44,19 +44,31 @@ fragment pr on PullRequest {
   }
 }`;
 
-function mapCI(state?: string | null): CI {
+export function mapCI(state?: string | null): CI {
   if (state === "SUCCESS") return "success";
   if (state === "FAILURE" || state === "ERROR") return "failure";
   if (state === "PENDING" || state === "EXPECTED") return "pending";
   return null;
 }
-function mapReview(d?: string | null): Review {
+export function mapReview(d?: string | null): Review {
   if (d === "APPROVED") return "approved";
   if (d === "CHANGES_REQUESTED") return "changes";
   if (d === "REVIEW_REQUIRED") return "required";
   return null;
 }
-function mapPR(n: Record<string, unknown>): PR {
+
+/** True only for the current GhData shape — guards against stale cached shapes. */
+export function isGhData(d: unknown): d is GhData {
+  const c = d as GhData | null;
+  return (
+    !!c &&
+    Array.isArray(c.mine) &&
+    Array.isArray(c.review) &&
+    Array.isArray(c.issues)
+  );
+}
+
+export function mapPR(n: Record<string, unknown>): PR {
   const repo = (n.repository as { nameWithOwner: string }).nameWithOwner;
   const state = (
     (n.commits as { nodes: Array<{ commit: { statusCheckRollup: { state: string } | null } }> })

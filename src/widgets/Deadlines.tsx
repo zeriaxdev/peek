@@ -3,18 +3,10 @@ import { useState } from "react";
 import Button from "../components/ui/Button";
 import Empty from "../components/ui/Empty";
 import Input from "../components/ui/Input";
+import { daysLeft, deadlineLabel } from "../lib/dates";
 import { useStored } from "../lib/store";
 
 type DL = { id: string; name: string; date: string };
-
-const DAY = 86_400_000;
-
-function daysLeft(date: string): number {
-  const target = new Date(`${date}T00:00:00`);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / DAY);
-}
 
 function Badge({ days }: { days: number }) {
   const cls =
@@ -25,8 +17,7 @@ function Badge({ days }: { days: number }) {
         : days <= 7
           ? "bg-accent-4 text-accent-11"
           : "bg-grayscale-3 text-grayscale-10 dark:bg-grayscale-5";
-  const label =
-    days < 0 ? "past" : days === 0 ? "today" : days === 1 ? "1 day" : `${days} days`;
+  const label = deadlineLabel(days);
   return (
     <span
       className={`shrink-0 rounded-full px-2 py-0.5 text-tiny font-medium tabular-nums ${cls}`}

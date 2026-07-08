@@ -1,15 +1,11 @@
 import { X } from "@phosphor-icons/react";
 import { useState, type FormEvent } from "react";
 import { fileToDataUrl } from "../lib/favicon";
+import { hostLabel, normalizeUrl } from "../lib/url";
 import type { LinkItem } from "./LinkTile";
 import Button from "./ui/Button";
 import IconButton from "./ui/IconButton";
 import Input from "./ui/Input";
-
-function normalizeUrl(raw: string): string {
-  const s = raw.trim();
-  return /^[a-z]+:\/\//i.test(s) ? s : `https://${s}`;
-}
 
 type Props = { onAdd: (link: LinkItem) => void; onClose: () => void };
 
@@ -22,16 +18,10 @@ export default function AddLink({ onAdd, onClose }: Props) {
     e.preventDefault();
     if (!url.trim()) return;
     const full = normalizeUrl(url);
-    let auto = full;
-    try {
-      auto = new URL(full).hostname.replace(/^www\./, "");
-    } catch {
-      /* keep raw */
-    }
     onAdd({
       id: crypto.randomUUID(),
       url: full,
-      title: title.trim() || auto,
+      title: title.trim() || hostLabel(full),
       icon,
     });
     onClose();
