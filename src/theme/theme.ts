@@ -13,6 +13,8 @@ import {
   grassDark,
   tomato,
   tomatoDark,
+  amber,
+  amberDark,
   cyan,
   cyanDark,
   pink,
@@ -68,4 +70,8 @@ export function applyTheme(t: ThemeSettings) {
     root.style.setProperty(`--gs-${i}`, gs[`sand${i}`]);
     root.style.setProperty(`--ac-${i}`, ac[`${name}${i}`]);
   }
+  // fixed semantic status colors (independent of accent)
+  root.style.setProperty("--ok", (dark ? grassDark : grass).grass9);
+  root.style.setProperty("--bad", (dark ? tomatoDark : tomato).tomato9);
+  root.style.setProperty("--warn", (dark ? amberDark : amber).amber9);
 }

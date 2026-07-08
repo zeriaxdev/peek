@@ -1,49 +1,89 @@
-import { GitPullRequest, GithubLogo } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  Circle,
+  DotsThree,
+  GitPullRequest,
+  GithubLogo,
+  WarningCircle,
+  XCircle,
+} from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Empty from "../components/ui/Empty";
 import Input from "../components/ui/Input";
+import { TabList } from "../components/ui/Tabs";
+import {
+  fetchGitHub,
+  type GhData,
+  type Issue,
+  type PR,
+} from "../lib/github";
 import { useStored } from "../lib/store";
 
-type PR = {
-  id: number;
-  number: number;
-  title: string;
-  html_url: string;
-  repo: string;
-  draft: boolean;
-};
-type Cache = { ts: number; items: PR[] };
-
+type Cache = { ts: number } & GhData;
 const POLL_MS = 5 * 60 * 1000;
 
-async function fetchPRs(pat: string): Promise<PR[]> {
-  const u = new URL("https://api.github.com/search/issues");
-  u.searchParams.set("q", "is:open is:pr involves:@me");
-  u.searchParams.set("sort", "updated");
-  u.searchParams.set("per_page", "15");
-  const r = await fetch(u, {
-    headers: {
-      Authorization: `Bearer ${pat}`,
-      Accept: "application/vnd.github+json",
-    },
-  });
-  if (!r.ok) throw new Error(String(r.status));
-  const j = await r.json();
-  return (j.items as Array<Record<string, unknown>>).map((it) => ({
-    id: it.id as number,
-    number: it.number as number,
-    title: it.title as string,
-    html_url: it.html_url as string,
-    draft: Boolean(it.draft),
-    repo: (it.repository_url as string).split("/").slice(-2).join("/"),
-  }));
+function CIDot({ ci }: { ci: PR["ci"] }) {
+  if (ci === "success")
+    return <CheckCircle size={13} weight="fill" className="shrink-0 text-ok" />;
+  if (ci === "failure")
+    return <XCircle size={13} weight="fill" className="shrink-0 text-bad" />;
+  if (ci === "pending")
+    return <DotsThree size={13} weight="bold" className="shrink-0 text-warn" />;
+  return <Circle size={13} className="shrink-0 text-grayscale-7" />;
+}
+
+function ReviewBadge({ review }: { review: PR["review"] }) {
+  if (review === "approved")
+    return <Badge variant="outline" className="text-ok">approved</Badge>;
+  if (review === "changes")
+    return <Badge variant="outline" className="text-bad">changes</Badge>;
+  if (review === "required")
+    return <Badge variant="outline">review</Badge>;
+  return null;
+}
+
+function PRRow({ pr }: { pr: PR }) {
+  return (
+    <a
+      href={pr.url}
+      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4"
+    >
+      <CIDot ci={pr.ci} />
+      <GitPullRequest
+        size={13}
+        className={`shrink-0 ${pr.draft ? "text-grayscale-8" : "text-accent-9"}`}
+      />
+      <span className="min-w-0 flex-1 truncate text-sm">{pr.title}</span>
+      <ReviewBadge review={pr.review} />
+      <span className="shrink-0 text-tiny text-grayscale-9">
+        {pr.repo.split("/")[1]} #{pr.number}
+      </span>
+    </a>
+  );
+}
+
+function IssueRow({ it }: { it: Issue }) {
+  return (
+    <a
+      href={it.url}
+      className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4"
+    >
+      <WarningCircle size={13} className="shrink-0 text-ok" />
+      <span className="min-w-0 flex-1 truncate text-sm">{it.title}</span>
+      <span className="shrink-0 text-tiny text-grayscale-9">
+        {it.repo.split("/")[1]} #{it.number}
+      </span>
+    </a>
+  );
 }
 
 export default function GitHub() {
   // ponytail: PAT lives in chrome.storage.local, never leaves the machine
   const [pat, setPat, patReady] = useStored<string>("githubPat", "");
   const [cache, setCache] = useStored<Cache | null>("githubCache", null);
+  const [tab, setTab] = useState("review");
   const [draft, setDraft] = useState("");
   const [invalid, setInvalid] = useState(false);
 
@@ -51,14 +91,14 @@ export default function GitHub() {
     if (!patReady || !pat) return;
     let cancelled = false;
     const refresh = () =>
-      fetchPRs(pat)
-        .then((items) => {
+      fetchGitHub(pat)
+        .then((d) => {
           if (cancelled) return;
           setInvalid(false);
-          setCache({ ts: Date.now(), items });
+          setCache({ ts: Date.now(), ...d });
         })
         .catch((e) => {
-          if (!cancelled && (e.message === "401" || e.message === "403"))
+          if (!cancelled && /40[13]|Bad cred/i.test(String(e.message)))
             setInvalid(true);
         });
     if (!cache || Date.now() - cache.ts > POLL_MS) refresh();
@@ -76,10 +116,10 @@ export default function GitHub() {
     return (
       <Empty
         icon={GithubLogo}
-        text={invalid ? "Token rejected — paste a new one" : "See your open PRs"}
+        text={invalid ? "Token rejected — paste a new one" : "See PRs that need you"}
       >
         <form
-          className="no-drag flex w-full max-w-64 gap-1.5"
+          className="no-drag flex w-full max-w-72 gap-1.5"
           onSubmit={(e) => {
             e.preventDefault();
             if (!draft.trim()) return;
@@ -100,7 +140,7 @@ export default function GitHub() {
           </Button>
         </form>
         <p className="text-center text-tiny text-grayscale-8">
-          fine-grained PAT, PR read scope — stored locally only
+          classic PAT, <code>repo</code> scope — stored locally only
         </p>
       </Empty>
     );
@@ -114,34 +154,33 @@ export default function GitHub() {
     );
   }
 
-  if (cache.items.length === 0) {
-    return <Empty icon={GitPullRequest} text="No open PRs — inbox zero" />;
-  }
+  const count = (n: number) =>
+    n > 0 ? <span className="text-grayscale-9">{n}</span> : null;
+  const tabs = [
+    { value: "review", label: <>Review {count(cache.review.length)}</> },
+    { value: "mine", label: <>Mine {count(cache.mine.length)}</> },
+    { value: "issues", label: <>Issues {count(cache.issues.length)}</> },
+  ];
+
+  const rows =
+    tab === "issues"
+      ? cache.issues.map((it) => <IssueRow key={it.key} it={it} />)
+      : (tab === "mine" ? cache.mine : cache.review).map((pr) => (
+          <PRRow key={pr.key} pr={pr} />
+        ));
 
   return (
-    <ul className="h-full overflow-y-auto p-2">
-      {cache.items.map((pr) => (
-        <li key={pr.id}>
-          <a
-            href={pr.html_url}
-            className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4"
-          >
-            <GitPullRequest
-              size={14}
-              className={`shrink-0 ${pr.draft ? "text-grayscale-8" : "text-accent-9"}`}
-            />
-            <span className="min-w-0 flex-1 truncate text-sm">{pr.title}</span>
-            {pr.draft && (
-              <span className="shrink-0 rounded-full border border-grayscale-4 px-1.5 text-tiny text-grayscale-9">
-                draft
-              </span>
-            )}
-            <span className="shrink-0 text-tiny text-grayscale-9">
-              {pr.repo} #{pr.number}
-            </span>
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div className="flex h-full flex-col">
+      <TabList items={tabs} value={tab} onChange={setTab} />
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+        {rows.length > 0 ? (
+          rows
+        ) : (
+          <p className="flex h-full items-center justify-center text-xs text-grayscale-8">
+            {tab === "review" ? "nothing waiting on you" : "nothing here"}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

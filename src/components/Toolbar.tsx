@@ -21,14 +21,11 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
   );
 
   return (
-    <header className="flex h-12 items-center justify-end gap-2 overflow-hidden px-3">
+    <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+      {/* edit extras: scroll rather than push the pinned buttons off-screen */}
       {edit && (
-        <>
-          <div
-            className="flex items-center gap-1.5"
-            role="group"
-            aria-label="Accent color"
-          >
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
+          <div className="flex shrink-0 items-center gap-1.5" role="group" aria-label="Accent color">
             {ACCENT_NAMES.map((name) => (
               <button
                 key={name}
@@ -36,7 +33,7 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
                 title={name}
                 onClick={() => setTheme((t) => ({ ...t, accent: name }))}
                 className={cn(
-                  "h-4.5 w-4.5 cursor-pointer rounded-full transition-transform hover:scale-110",
+                  "h-4.5 w-4.5 shrink-0 cursor-pointer rounded-full transition-transform hover:scale-110",
                   theme.accent === name &&
                     "ring-2 ring-grayscale-12 ring-offset-2 ring-offset-grayscale-1",
                 )}
@@ -44,47 +41,41 @@ export default function Toolbar({ edit, setEdit, layout, setLayout }: Props) {
               />
             ))}
           </div>
-          {inactive.length > 0 && (
-            <div className="ml-1 flex min-w-0 items-center gap-1.5 overflow-x-auto">
-              {inactive.map((w) => (
-                <Button
-                  key={w.id}
-                  className="shrink-0 px-2 py-0.5 text-xs"
-                  onClick={() =>
-                    setLayout((prev) => [
-                      ...prev,
-                      { i: w.id, x: 0, y: 99, w: w.w, h: w.h },
-                    ])
-                  }
-                >
-                  <Plus size={10} /> {w.title}
-                </Button>
-              ))}
-            </div>
-          )}
-        </>
+          {inactive.map((w) => (
+            <Button
+              key={w.id}
+              className="shrink-0 px-2 py-0.5 text-xs"
+              onClick={() =>
+                setLayout((prev) => [
+                  ...prev,
+                  { i: w.id, x: 0, y: Infinity, w: w.w, h: w.h },
+                ])
+              }
+            >
+              <Plus size={10} /> {w.title}
+            </Button>
+          ))}
+        </div>
       )}
       <IconButton
+        className="shrink-0"
         aria-label={theme.mode === "dark" ? "Switch to light" : "Switch to dark"}
         title={theme.mode === "dark" ? "Light mode" : "Dark mode"}
         onClick={() =>
-          setTheme((t) => ({
-            ...t,
-            mode: t.mode === "dark" ? "light" : "dark",
-          }))
+          setTheme((t) => ({ ...t, mode: t.mode === "dark" ? "light" : "dark" }))
         }
       >
         {theme.mode === "dark" ? <Sun size={15} /> : <Moon size={15} />}
       </IconButton>
       {edit ? (
-        <Button variant="primary" className="px-2.5 py-0.5 text-xs" onClick={() => setEdit(false)}>
+        <Button variant="primary" className="shrink-0 px-2.5 py-0.5 text-xs" onClick={() => setEdit(false)}>
           <Check size={12} /> Done
         </Button>
       ) : (
-        <IconButton aria-label="Edit layout" title="Edit layout" onClick={() => setEdit(true)}>
+        <IconButton className="shrink-0" aria-label="Edit layout" title="Edit layout" onClick={() => setEdit(true)}>
           <PencilSimple size={15} />
         </IconButton>
       )}
-    </header>
+    </div>
   );
 }

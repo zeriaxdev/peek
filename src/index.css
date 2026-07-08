@@ -34,6 +34,10 @@
   --color-accent-10: var(--ac-10);
   --color-accent-11: var(--ac-11);
   --color-accent-12: var(--ac-12);
+
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-warn: var(--warn);
 }
 
 html,

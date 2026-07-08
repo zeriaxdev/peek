@@ -1,20 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RGL, { WidthProvider, type Layout } from "react-grid-layout";
-import { WIDGETS } from "../widgets/registry";
+import { GRID_ROWS, WIDGETS } from "../widgets/registry";
 import WidgetShell from "./WidgetShell";
 
 const Grid = WidthProvider(RGL);
-
-const ROWS = 12;
-const MARGIN = 8;
-const TOOLBAR_H = 48;
-
-// Row height sized so ROWS rows exactly fill the viewport → no scroll.
-function calcRowHeight(): number {
-  const avail =
-    window.innerHeight - TOOLBAR_H - MARGIN * 2 - MARGIN * (ROWS - 1);
-  return Math.max(24, Math.floor(avail / ROWS));
-}
+const MARGIN = 10;
 
 type Props = {
   layout: Layout[];
@@ -23,15 +13,23 @@ type Props = {
 };
 
 export default function BentoGrid({ layout, setLayout, edit }: Props) {
-  const [rowHeight, setRowHeight] = useState(calcRowHeight);
+  const ref = useRef<HTMLDivElement>(null);
+  const [rowHeight, setRowHeight] = useState(60);
   // no CSS transforms on first paint → cards don't fly in from the corner
   const [mounted, setMounted] = useState(false);
 
+  // Measure the actual grid box (not the window) so GRID_ROWS rows fill it
+  // exactly — the board never overflows and never clips the toolbar.
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const avail = el.clientHeight - MARGIN * (GRID_ROWS + 1);
+      setRowHeight(Math.max(28, Math.floor(avail / GRID_ROWS)));
+    });
+    ro.observe(el);
     setMounted(true);
-    const onResize = () => setRowHeight(calcRowHeight());
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => ro.disconnect();
   }, []);
 
   // drop stored items whose widget no longer exists; enforce per-widget minimums
@@ -44,19 +42,18 @@ export default function BentoGrid({ layout, setLayout, edit }: Props) {
     }));
 
   return (
-    <div className="flex-1">
+    <div ref={ref} className="min-h-0 flex-1">
       <Grid
         layout={items}
         cols={12}
-        maxRows={ROWS}
         rowHeight={rowHeight}
         margin={[MARGIN, MARGIN]}
-        containerPadding={[MARGIN, MARGIN]}
+        containerPadding={[0, 0]}
         compactType="vertical"
         useCSSTransforms={mounted}
         isDraggable={edit}
         isResizable={edit}
-        draggableCancel=".no-drag"
+        draggableHandle=".drag-handle"
         onLayoutChange={(l) => setLayout(l)}
       >
         {items.map((li) => (
