@@ -38,21 +38,30 @@ function CIDot({ ci }: { ci: PR["ci"] }) {
 
 function ReviewBadge({ review }: { review: PR["review"] }) {
   if (review === "approved")
-    return <Badge variant="outline" className="text-ok">approved</Badge>;
+    return (
+      <Badge variant="outline" className="text-ok">
+        approved
+      </Badge>
+    );
   if (review === "changes")
-    return <Badge variant="outline" className="text-bad">changes</Badge>;
+    return (
+      <Badge variant="outline" className="text-bad">
+        changes
+      </Badge>
+    );
   // not approved yet → amber, so open work stands out at a glance
-  return <Badge variant="outline" className="text-warn">review</Badge>;
+  return (
+    <Badge variant="outline" className="text-warn">
+      review
+    </Badge>
+  );
 }
 
 function PRRow({ pr, onHide }: { pr: PR; onHide: () => void }) {
-  const approved = pr.review === "approved";
   return (
     <a
       href={pr.url}
-      className={`group flex items-center gap-2 rounded-lg border-l-2 px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4 ${
-        approved ? "border-transparent" : "border-warn/60"
-      }`}
+      className={`group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-grayscale-2 dark:hover:bg-grayscale-4`}
     >
       <CIDot ci={pr.ci} />
       <GitPullRequest
@@ -135,7 +144,9 @@ export default function GitHub() {
     return (
       <Empty
         icon={GithubLogo}
-        text={invalid ? "Token rejected — paste a new one" : "See PRs that need you"}
+        text={
+          invalid ? "Token rejected — paste a new one" : "See PRs that need you"
+        }
       >
         <form
           className="no-drag flex w-full max-w-72 gap-1.5"
@@ -154,7 +165,11 @@ export default function GitHub() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
-          <Button variant="primary" type="submit" className="px-2.5 py-0.5 text-xs">
+          <Button
+            variant="primary"
+            type="submit"
+            className="px-2.5 py-0.5 text-xs"
+          >
             Save
           </Button>
         </form>
